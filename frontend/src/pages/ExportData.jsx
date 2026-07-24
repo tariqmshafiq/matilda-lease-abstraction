@@ -38,16 +38,9 @@ export default function ExportData() {
   return (
     <div className="app-fade-in space-y-8">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#9CA3AF]">
-          Export
-        </p>
-        <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
+        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
           Export
         </h2>
-        <p className="mt-2 text-sm text-[#4B5563]">
-          Download approved lease abstraction records as a CSV or Excel file (one row per approved
-          document).
-        </p>
       </div>
 
       <Card className="p-8">

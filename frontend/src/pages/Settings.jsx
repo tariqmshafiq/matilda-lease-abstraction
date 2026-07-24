@@ -62,16 +62,9 @@ export default function Settings() {
   return (
     <div className="app-fade-in space-y-8">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#9CA3AF]">
-          Configuration
-        </p>
-        <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
+        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
           Settings
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-[#4B5563]">
-          Choose which AI model runs lease abstraction and manage its API key. Changes
-          take effect immediately for the next document uploaded — no restart required.
-        </p>
       </div>
 
       {loading ? (

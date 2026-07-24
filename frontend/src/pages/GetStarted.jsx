@@ -111,17 +111,9 @@ export default function GetStarted() {
   return (
     <div className="app-fade-in space-y-10">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#9CA3AF]">
-          Reference
-        </p>
-        <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
+        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
           Start Here
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-[#4B5563]">
-          The mechanism this tool uses to turn an uploaded lease PDF into a
-          structured, human-reviewed data record — from raw text extraction
-          through AI abstraction to export.
-        </p>
       </div>
 
       {/* Pipeline */}
