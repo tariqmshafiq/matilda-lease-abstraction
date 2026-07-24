@@ -1,9 +1,13 @@
 """Modular AI extraction layer.
 
-Active provider: Gemini (via Google's official google-genai SDK).
-Future provider: Claude (Anthropic) — placeholder ready, same JSON schema.
+Providers: Gemini (via Google's official google-genai SDK) and DeepSeek
+(OpenAI-compatible chat completions API). Future provider: Claude
+(Anthropic) — placeholder ready, same JSON schema.
 
-Select provider with AI_PROVIDER env var ("gemini" by default).
+The active provider and API keys are read live from `settings_service`
+(Mongo-backed, editable from the GUI) with environment variables as a
+fallback, so switching providers or rotating a key never requires a
+redeploy or restart.
 API keys live in the backend only and are never returned to the frontend.
 """
 import json
@@ -12,10 +16,13 @@ import os
 import re
 
 from fields import FIELD_NAMES, NOT_FOUND_EVIDENCE
+from services import settings_service
 
 logger = logging.getLogger("ai_extraction")
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 
 MAX_TEXT_CHARS = 30000  # keep prompt within sane bounds
 
@@ -86,7 +93,7 @@ def _failed_payload(reason: str) -> dict:
 
 
 async def _gemini_extract(lease_text: str) -> dict:
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = await settings_service.get_api_key("gemini")
     if not api_key:
         raise RuntimeError("Gemini API key is not configured.")
 
@@ -103,6 +110,34 @@ async def _gemini_extract(lease_text: str) -> dict:
         ),
     )
     return _parse_response(response.text or "", provider="gemini", text_len=len(lease_text))
+
+
+async def _deepseek_extract(lease_text: str) -> dict:
+    api_key = await settings_service.get_api_key("deepseek")
+    if not api_key:
+        raise RuntimeError("DeepSeek API key is not configured.")
+
+    import httpx
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        response = await client.post(
+            f"{DEEPSEEK_BASE_URL}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}"},
+            json={
+                "model": DEEPSEEK_MODEL,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": _build_prompt(lease_text)},
+                ],
+                "response_format": {"type": "json_object"},
+                "stream": False,
+            },
+        )
+        response.raise_for_status()
+        data = response.json()
+        raw = data["choices"][0]["message"]["content"]
+
+    return _parse_response(raw or "", provider="deepseek", text_len=len(lease_text))
 
 
 async def _claude_extract(lease_text: str) -> dict:
@@ -144,6 +179,7 @@ def _parse_response(raw: str, provider: str, text_len: int) -> dict:
 
 PROVIDERS = {
     "gemini": _gemini_extract,
+    "deepseek": _deepseek_extract,
     "claude": _claude_extract,
 }
 
@@ -154,7 +190,7 @@ async def extract_fields(lease_text: str) -> dict:
     Never raises for model/parse errors — returns a needs_review payload instead,
     so a bad document never crashes the app.
     """
-    provider = os.environ.get("AI_PROVIDER", "gemini").lower()
+    provider = await settings_service.get_active_provider()
     fn = PROVIDERS.get(provider, _gemini_extract)
 
     if not lease_text or not lease_text.strip():

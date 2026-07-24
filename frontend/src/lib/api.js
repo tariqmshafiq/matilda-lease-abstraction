@@ -22,6 +22,12 @@ export const approveDocument = (id, fields) =>
 export const getApprovedCount = () =>
   client.get("/export/approved/count").then((r) => r.data);
 
+export const getAiSettings = () => client.get("/settings/ai").then((r) => r.data);
+export const updateAiProvider = (provider) =>
+  client.put("/settings/ai/provider", { provider }).then((r) => r.data);
+export const updateAiApiKey = (provider, api_key) =>
+  client.put("/settings/ai/api-key", { provider, api_key }).then((r) => r.data);
+
 export const exportUrl = `${API}/export/approved`;
 export const exportExcelUrl = `${API}/export/approved/excel`;
 

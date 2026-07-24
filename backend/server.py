@@ -13,8 +13,10 @@ logging.basicConfig(level=logging.INFO)
 
 from routes import documents as documents_route  # noqa: E402
 from routes import export as export_route  # noqa: E402
+from routes import settings as settings_route  # noqa: E402
 from routes import upload as upload_route  # noqa: E402
 from db import db  # noqa: E402
+from services import settings_service  # noqa: E402
 
 app = FastAPI(title="Lease Abstraction Assistant")
 
@@ -27,7 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router in (upload_route.router, documents_route.router, export_route.router):
+for router in (upload_route.router, documents_route.router, export_route.router, settings_route.router):
     # Vercel Services strips the /api service prefix before invoking FastAPI.
     # Keep prefixed routes too so local development continues to use /api.
     app.include_router(router)
@@ -45,10 +47,13 @@ async def health():
     except Exception as exc:
         db_error = type(exc).__name__
 
+    ai_status = await settings_service.get_status()
+    active = next((p for p in ai_status["providers"] if p["key"] == ai_status["provider"]), None)
+
     return {
         "status": "ok",
-        "ai_provider": os.environ.get("AI_PROVIDER", "gemini"),
-        "ai_key_configured": bool(os.environ.get("GEMINI_API_KEY")),
+        "ai_provider": ai_status["provider"],
+        "ai_key_configured": bool(active and active["configured"]),
         "db_connected": db_connected,
         "db_error": db_error,
     }

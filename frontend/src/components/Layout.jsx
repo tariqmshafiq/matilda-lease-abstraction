@@ -1,15 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, History, Download, Compass } from "lucide-react";
+import { LayoutDashboard, History, Download, Compass, Settings2 } from "lucide-react";
+import { getAiSettings } from "../lib/api";
 
 const NAV = [
   { to: "/", label: "Upload & Dashboard", icon: LayoutDashboard, end: true },
   { to: "/history", label: "Document History", icon: History },
   { to: "/export", label: "Export Data", icon: Download },
   { to: "/get-started", label: "Get Started", icon: Compass },
+  { to: "/settings", label: "AI Settings", icon: Settings2 },
 ];
 
 export default function Layout({ children }) {
+  const [providerLabel, setProviderLabel] = useState("—");
+
+  useEffect(() => {
+    let cancelled = false;
+    getAiSettings()
+      .then((data) => {
+        if (cancelled) return;
+        const active = (data.providers || []).find((p) => p.key === data.provider);
+        setProviderLabel(active?.label || data.provider || "—");
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-canvas-subtle">
       {/* Sidebar */}
@@ -44,7 +62,7 @@ export default function Layout({ children }) {
           })}
         </nav>
         <div className="border-t border-line px-6 py-4 text-xs text-[#9CA3AF]">
-          AI Provider: <span className="font-mono text-[#4B5563]">Gemini Flash</span>
+          AI Provider: <span className="font-mono text-[#4B5563]">{providerLabel}</span>
         </div>
       </aside>
 
