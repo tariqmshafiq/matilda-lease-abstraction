@@ -38,19 +38,17 @@ export default function ExportData() {
   return (
     <div className="app-fade-in space-y-8">
       <div>
-        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
-          Export
-        </h2>
+        <h2 className="font-heading text-4xl tracking-tight text-ink">Export</h2>
       </div>
 
       <Card className="p-8">
         <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-canvas-muted">
-              <FileSpreadsheet className="text-ink" size={24} />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft">
+              <FileSpreadsheet className="text-brand" size={24} />
             </div>
             <div>
-              <p className="font-heading text-lg font-semibold text-ink">
+              <p className="font-heading text-xl text-ink">
                 Approved Lease Export
               </p>
               <p className="mt-1 text-sm text-[#4B5563]" data-testid="approved-count-label">
@@ -71,7 +69,7 @@ export default function ExportData() {
               id="export-format"
               value={format}
               onChange={(event) => setFormat(event.target.value)}
-              className="rounded-sm border border-line bg-white px-3 py-2 text-sm text-ink"
+              className="rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand-soft"
               data-testid="export-format-select"
             >
               <option value="csv">CSV (.csv)</option>
@@ -105,14 +103,14 @@ export default function ExportData() {
 
       {/* Column reference */}
       <Card className="p-6">
-        <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+        <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand">
           <CheckCircle2 size={14} /> Export Columns
         </p>
         <div className="flex flex-wrap gap-2">
           {COLUMNS.map((c) => (
             <span
               key={c}
-              className="rounded-sm border border-line bg-canvas-subtle px-2.5 py-1 font-mono text-xs text-[#4B5563]"
+              className="rounded-full border border-line bg-canvas-muted px-3 py-1 font-mono text-xs text-ink-soft"
             >
               {c}
             </span>

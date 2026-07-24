@@ -111,25 +111,23 @@ export default function GetStarted() {
   return (
     <div className="app-fade-in space-y-10">
       <div>
-        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
-          Start Here
-        </h2>
+        <h2 className="font-heading text-4xl tracking-tight text-ink">Start Here</h2>
       </div>
 
       {/* Pipeline */}
       <div>
-        <h3 className="mb-3 font-heading text-lg font-semibold text-ink">The Pipeline</h3>
+        <h3 className="mb-3 font-heading text-2xl text-ink">The Pipeline</h3>
         <div className="space-y-3">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             return (
               <Card key={s.title} className="p-5">
                 <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-canvas-muted">
-                    <Icon size={18} className="text-ink" strokeWidth={2} />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft">
+                    <Icon size={18} className="text-brand" strokeWidth={2} />
                   </div>
                   <div>
-                    <h4 className="font-heading text-sm font-bold text-ink">{s.title}</h4>
+                    <h4 className="font-heading text-lg text-ink">{s.title}</h4>
                     <p className="mt-1.5 text-sm leading-relaxed text-[#4B5563]">{s.body}</p>
                   </div>
                 </div>
@@ -146,7 +144,7 @@ export default function GetStarted() {
 
       {/* Fields extracted */}
       <div>
-        <h3 className="mb-3 font-heading text-lg font-semibold text-ink">
+        <h3 className="mb-3 font-heading text-2xl text-ink">
           The 10 Fields Extracted
         </h3>
         <p className="mb-4 max-w-2xl text-sm text-[#4B5563]">
@@ -173,7 +171,7 @@ export default function GetStarted() {
 
       {/* Design principles */}
       <div>
-        <h3 className="mb-3 font-heading text-lg font-semibold text-ink">
+        <h3 className="mb-3 font-heading text-2xl text-ink">
           Why It's Built This Way
         </h3>
         <Card className="p-6">

@@ -62,9 +62,7 @@ export default function Settings() {
   return (
     <div className="app-fade-in space-y-8">
       <div>
-        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
-          Settings
-        </h2>
+        <h2 className="font-heading text-4xl tracking-tight text-ink">Settings</h2>
       </div>
 
       {loading ? (
@@ -74,7 +72,7 @@ export default function Settings() {
       ) : (
         <>
           <Card className="p-6">
-            <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+            <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand">
               <Sparkles size={14} /> Model Provider
             </p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -88,18 +86,18 @@ export default function Settings() {
                     disabled={!p.available}
                     onClick={() => p.available && setSelectedProvider(p.key)}
                     data-testid={`provider-option-${p.key}`}
-                    className={`relative rounded-md border px-4 py-3 text-left transition-colors duration-150 ${
+                    className={`relative rounded-xl border px-4 py-3 text-left transition-colors duration-150 ${
                       !p.available
                         ? "cursor-not-allowed border-line bg-canvas-subtle opacity-60"
                         : isSelected
-                        ? "border-ink bg-canvas-muted"
-                        : "border-line-strong bg-white hover:border-ink"
+                        ? "border-brand bg-brand-softer"
+                        : "border-line-strong bg-white hover:border-brand"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold text-ink">{p.label}</span>
                       {isActive && (
-                        <span className="rounded-sm border border-[#BFDBFE] bg-[#EFF6FF] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#1E40AF]">
+                        <span className="rounded-full border border-brand-soft bg-brand-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-ink">
                           Active
                         </span>
                       )}
@@ -118,7 +116,7 @@ export default function Settings() {
           </Card>
 
           <Card className="p-6">
-            <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+            <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand">
               <KeyRound size={14} /> API Key {selected ? `— ${selected.label}` : ""}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -134,7 +132,7 @@ export default function Settings() {
                 onChange={(e) => setApiKey(e.target.value)}
                 disabled={!selected?.available}
                 data-testid="api-key-input"
-                className="flex-1 rounded-sm border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-[#9CA3AF] disabled:cursor-not-allowed disabled:bg-canvas-subtle"
+                className="flex-1 rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-[#9CA3AF] focus:border-brand focus:ring-2 focus:ring-brand-soft disabled:cursor-not-allowed disabled:bg-canvas-subtle"
               />
             </div>
             <p className="mt-2 text-xs text-[#9CA3AF]">

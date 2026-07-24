@@ -76,10 +76,10 @@ const PROCESSING_STAGES = [
 const STAGE_INTERVAL_MS = 1400;
 
 const SUMMARY = [
-  { key: "total", label: "Total Uploaded", icon: Files, color: "#0A0A0A" },
-  { key: "processed", label: "Documents Processed", icon: FileText, color: "#1E40AF" },
-  { key: "needs_review", label: "Needs Review", icon: AlertTriangle, color: "#92400E" },
-  { key: "approved", label: "Approved", icon: CheckCircle2, color: "#166534" },
+  { key: "total", label: "Total Uploaded", icon: Files, color: "#1A1A1A" },
+  { key: "processed", label: "Documents Processed", icon: FileText, color: "#7C3AED" },
+  { key: "needs_review", label: "Needs Review", icon: AlertTriangle, color: "#B45309" },
+  { key: "approved", label: "Approved", icon: CheckCircle2, color: "#15803D" },
 ];
 
 export default function Dashboard() {
@@ -174,9 +174,7 @@ export default function Dashboard() {
   return (
     <div className="app-fade-in space-y-10">
       <div>
-        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
-          Dashboard
-        </h2>
+        <h2 className="font-heading text-4xl tracking-tight text-ink">Dashboard</h2>
       </div>
 
       {/* Summary cards */}
@@ -207,7 +205,7 @@ export default function Dashboard() {
 
       {/* Upload zone */}
       <div>
-        <h3 className="mb-3 font-heading text-lg font-semibold text-ink">Upload a Lease</h3>
+        <h3 className="mb-3 font-heading text-xl text-ink">Upload a Lease</h3>
         <div
           data-testid="upload-dropzone"
           onDragOver={(e) => {
@@ -221,11 +219,11 @@ export default function Dashboard() {
             if (!uploading) handleFiles(e.dataTransfer.files);
           }}
           onClick={() => !uploading && inputRef.current?.click()}
-          className={`rounded-md border-2 border-dashed bg-white text-center transition-colors duration-150 ${
+          className={`rounded-2xl border-2 border-dashed bg-white text-center transition-colors duration-150 ${
             uploading
               ? "cursor-default px-6 py-10 border-line-strong"
               : `flex cursor-pointer flex-col items-center justify-center px-6 py-14 ${
-                  dragOver ? "border-ink bg-canvas-muted" : "border-line-strong hover:border-ink"
+                  dragOver ? "border-brand bg-brand-softer" : "border-line-strong hover:border-brand"
                 }`
           }`}
         >
@@ -292,8 +290,8 @@ export default function Dashboard() {
             </div>
           ) : (
             <>
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-canvas-muted">
-                <UploadCloud className="text-ink" size={26} />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft">
+                <UploadCloud className="text-brand" size={26} />
               </div>
               <p className="mt-4 text-sm font-semibold text-ink">
                 Drag &amp; drop a lease PDF here
@@ -321,7 +319,7 @@ export default function Dashboard() {
       {/* Recent uploads */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-heading text-lg font-semibold text-ink">Recent Uploads</h3>
+          <h3 className="font-heading text-xl text-ink">Recent Uploads</h3>
           <Button variant="ghost" onClick={() => navigate("/history")} data-testid="view-all-btn">
             View all
           </Button>

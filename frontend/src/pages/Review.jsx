@@ -156,7 +156,7 @@ export default function Review() {
           >
             <ArrowLeft size={14} /> Back to History
           </button>
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-ink" data-testid="review-doc-name">
+          <h2 className="font-heading text-3xl tracking-tight text-ink" data-testid="review-doc-name">
             {doc.file_name}
           </h2>
           <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#4B5563]">
@@ -209,10 +209,10 @@ export default function Review() {
 
       {/* Summary */}
       <Card className="p-6">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#9CA3AF]">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand">
           Document Summary
         </p>
-        <p className="text-sm leading-relaxed text-[#0A0A0A]" data-testid="review-summary">
+        <p className="text-sm leading-relaxed text-ink" data-testid="review-summary">
           {doc.summary || "No summary available."}
         </p>
       </Card>
@@ -226,7 +226,7 @@ export default function Review() {
             return (
               <Card key={section} className="overflow-hidden" data-testid={`section-${section.replace(/[^a-zA-Z]+/g, "-")}`}>
                 <div className="border-b border-line bg-canvas-subtle px-6 py-3">
-                  <h3 className="font-heading text-sm font-semibold uppercase tracking-wide text-ink">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">
                     {section}
                   </h3>
                 </div>
@@ -244,7 +244,7 @@ export default function Review() {
                         onChange={(e) => updateField(f.fieldName, e.target.value)}
                         placeholder="—"
                         data-testid={`field-input-${f.fieldName.replace(/[^a-zA-Z]+/g, "-")}`}
-                        className="mt-2 w-full resize-y rounded-sm border border-line bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-ink focus:ring-1 focus:ring-ink disabled:bg-canvas-muted disabled:text-[#4B5563]"
+                        className="mt-2 w-full resize-y rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand-soft disabled:bg-canvas-muted disabled:text-[#4B5563]"
                       />
                       <div className="mt-2 flex items-center justify-between gap-4">
                         <Confidence value={f.confidence} testId={`field-confidence-${f.fieldName.replace(/[^a-zA-Z]+/g, "-")}`} />
@@ -266,9 +266,9 @@ export default function Review() {
         {/* Needs Review panel */}
         <div className="xl:col-span-1">
           <Card className="sticky top-24 overflow-hidden" data-testid="needs-review-panel">
-            <div className="flex items-center gap-2 border-b border-line bg-[#FEF3C7] px-5 py-3">
-              <AlertTriangle size={16} className="text-[#92400E]" />
-              <h3 className="font-heading text-sm font-semibold text-[#92400E]">
+            <div className="flex items-center gap-2 border-b border-line bg-[#FFFBEB] px-5 py-3">
+              <AlertTriangle size={16} className="text-[#B45309]" />
+              <h3 className="text-sm font-semibold text-[#B45309]">
                 Needs Review ({needsReview.length})
               </h3>
             </div>

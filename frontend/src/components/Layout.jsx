@@ -12,16 +12,14 @@ const NAV = [
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-canvas-subtle">
+    <div className="min-h-screen">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-white md:flex">
-        <div className="flex items-center gap-3 border-b border-line px-6 py-5">
-          <img src="/logo.webp" alt="Logo" className="h-9 w-9 rounded-sm object-contain" />
-          <div className="font-heading text-sm font-bold tracking-tight text-ink">
-            MatildaCLA
-          </div>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-white/70 backdrop-blur-xl md:flex">
+        <div className="flex items-center gap-3 px-6 py-6">
+          <img src="/logo.webp" alt="MatildaCLA" className="h-9 w-9 rounded-xl object-contain" />
+          <div className="font-heading text-xl tracking-tight text-ink">MatildaCLA</div>
         </div>
-        <nav className="flex-1 px-3 py-4">
+        <nav className="flex-1 px-3 py-2">
           {NAV.map((item) => {
             const Icon = item.icon;
             return (
@@ -31,10 +29,10 @@ export default function Layout({ children }) {
                 end={item.end}
                 data-testid={`nav-${item.label.toLowerCase().replace(/[^a-z]+/g, "-")}`}
                 className={({ isActive }) =>
-                  `mb-1 flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
+                  `mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                     isActive
-                      ? "bg-ink text-white"
-                      : "text-[#4B5563] hover:bg-canvas-muted hover:text-ink"
+                      ? "bg-brand-soft text-brand-ink"
+                      : "text-ink-soft hover:bg-brand-softer hover:text-brand-ink"
                   }`
                 }
               >
@@ -48,7 +46,7 @@ export default function Layout({ children }) {
 
       {/* Main */}
       <div className="md:pl-64">
-        <main className="p-6 md:p-12">{children}</main>
+        <main className="mx-auto max-w-6xl p-6 md:p-12">{children}</main>
       </div>
     </div>
   );

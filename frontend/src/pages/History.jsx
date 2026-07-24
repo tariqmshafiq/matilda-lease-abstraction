@@ -33,9 +33,7 @@ export default function History() {
   return (
     <div className="app-fade-in space-y-8">
       <div>
-        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
-          History
-        </h2>
+        <h2 className="font-heading text-4xl tracking-tight text-ink">History</h2>
       </div>
 
       <Card className="overflow-hidden">
