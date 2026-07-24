@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,6 +9,8 @@ import {
   Info,
   ShieldAlert,
   ChevronRight,
+  FileSearch,
+  FileText,
 } from "lucide-react";
 import { Card, Button, StatusBadge, MethodTag, QualityBadge, Confidence } from "../components/ui";
 import { getDocument, saveDraft, approveDocument, exportUrl } from "../lib/api";
@@ -28,6 +30,85 @@ function fmtDate(iso) {
   } catch {
     return iso;
   }
+}
+
+// ---- Evidence → source-text matching ---------------------------------------
+// The AI returns verbatim evidence snippets, but whitespace, line breaks and
+// quote characters rarely survive extraction identically. We match on a
+// normalized copy of the text and keep an index map back to the original.
+
+function normalizeChar(c) {
+  if (c === "‘" || c === "’") return "'";
+  if (c === "“" || c === "”") return '"';
+  return c.toLowerCase();
+}
+
+function buildNormalized(text) {
+  const chars = [];
+  const map = []; // normalized index -> original index
+  let prevSpace = true; // leading whitespace is dropped
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (/\s/.test(c)) {
+      if (!prevSpace) {
+        chars.push(" ");
+        map.push(i);
+        prevSpace = true;
+      }
+    } else {
+      chars.push(normalizeChar(c));
+      map.push(i);
+      prevSpace = false;
+    }
+  }
+  // trim trailing collapsed space
+  if (chars.length && chars[chars.length - 1] === " ") {
+    chars.pop();
+    map.pop();
+  }
+  return { norm: chars.join(""), map };
+}
+
+/**
+ * Locate each field's evidence inside rawText. Returns:
+ *  groups: [{ start, end, fieldNames: [] }] sorted, non-overlapping
+ *  byField: { fieldName: groupIndex }
+ */
+function computeEvidenceGroups(rawText, fields) {
+  const empty = { groups: [], byField: {} };
+  if (!rawText) return empty;
+  const { norm, map } = buildNormalized(rawText);
+
+  const ranges = [];
+  for (const f of fields) {
+    const evidence = (f.evidence || "").trim();
+    if (!evidence || evidence === "Not found in extracted text" || evidence.startsWith("(")) continue;
+    const { norm: evNorm } = buildNormalized(evidence);
+    if (evNorm.length < 4) continue;
+    const idx = norm.indexOf(evNorm);
+    if (idx === -1) continue;
+    const start = map[idx];
+    const end = map[idx + evNorm.length - 1] + 1;
+    ranges.push({ start, end, fieldName: f.fieldName });
+  }
+
+  ranges.sort((a, b) => a.start - b.start || b.end - a.end);
+
+  const groups = [];
+  const byField = {};
+  for (const r of ranges) {
+    const last = groups[groups.length - 1];
+    if (last && r.start < last.end) {
+      // overlapping evidence → share one highlight
+      last.end = Math.max(last.end, r.end);
+      last.fieldNames.push(r.fieldName);
+      byField[r.fieldName] = groups.length - 1;
+    } else {
+      groups.push({ start: r.start, end: r.end, fieldNames: [r.fieldName] });
+      byField[r.fieldName] = groups.length - 1;
+    }
+  }
+  return { groups, byField };
 }
 
 function Banner({ tone, icon: Icon, children, testId }) {
@@ -57,6 +138,8 @@ export default function Review() {
   const [approving, setApproving] = useState(false);
   const [flash, setFlash] = useState("");
   const [expanded, setExpanded] = useState(new Set());
+  const [activeGroup, setActiveGroup] = useState(null);
+  const docScrollRef = useRef(null);
 
   const toggleField = (name) => {
     setExpanded((prev) => {
@@ -66,6 +149,61 @@ export default function Review() {
       return next;
     });
   };
+
+  const evidenceIndex = useMemo(
+    () => computeEvidenceGroups(doc?.raw_text || "", fields),
+    [doc, fields]
+  );
+
+  // Field → document: highlight + scroll the source panel to the evidence.
+  const jumpToSource = (fieldName) => {
+    const groupIdx = evidenceIndex.byField[fieldName];
+    if (groupIdx === undefined) return;
+    setActiveGroup(groupIdx);
+    const container = docScrollRef.current;
+    const mark = document.getElementById(`evidence-mark-${groupIdx}`);
+    if (container && mark) {
+      const contRect = container.getBoundingClientRect();
+      const markRect = mark.getBoundingClientRect();
+      container.scrollTo({
+        top: container.scrollTop + (markRect.top - contRect.top) - container.clientHeight / 2,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Document → field: expand the field and scroll the page to it.
+  const jumpToField = (groupIdx) => {
+    const group = evidenceIndex.groups[groupIdx];
+    if (!group) return;
+    setActiveGroup(groupIdx);
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      group.fieldNames.forEach((n) => next.add(n));
+      return next;
+    });
+    const fieldId = group.fieldNames[0].replace(/[^a-zA-Z]+/g, "-");
+    // wait a tick so the expanded row exists before scrolling
+    setTimeout(() => {
+      document
+        .getElementById(`field-row-${fieldId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  };
+
+  // Split raw text into plain/highlighted segments for rendering.
+  const docSegments = useMemo(() => {
+    const text = doc?.raw_text || "";
+    const segs = [];
+    let cursor = 0;
+    evidenceIndex.groups.forEach((g, i) => {
+      if (g.start > cursor) segs.push({ text: text.slice(cursor, g.start) });
+      segs.push({ text: text.slice(g.start, g.end), group: i });
+      cursor = g.end;
+    });
+    if (cursor < text.length) segs.push({ text: text.slice(cursor) });
+    return segs;
+  }, [doc, evidenceIndex]);
 
   useEffect(() => {
     let active = true;
@@ -245,8 +383,9 @@ export default function Review() {
                   {sectionFields.map((f) => {
                     const fieldId = f.fieldName.replace(/[^a-zA-Z]+/g, "-");
                     const isOpen = expanded.has(f.fieldName);
+                    const locatable = evidenceIndex.byField[f.fieldName] !== undefined;
                     return (
-                      <div key={f.fieldName}>
+                      <div key={f.fieldName} id={`field-row-${fieldId}`}>
                         <button
                           type="button"
                           onClick={() => toggleField(f.fieldName)}
@@ -287,8 +426,27 @@ export default function Review() {
                             />
                             <div className="mt-2 flex items-center justify-between gap-4">
                               <Confidence value={f.confidence} testId={`field-confidence-${fieldId}`} />
+                              {locatable ? (
+                                <button
+                                  type="button"
+                                  onClick={() => jumpToSource(f.fieldName)}
+                                  data-testid={`locate-btn-${fieldId}`}
+                                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold text-brand transition-colors hover:bg-brand-softer"
+                                >
+                                  <FileSearch size={13} /> Locate in document
+                                </button>
+                              ) : (
+                                <span className="text-xs text-[#9CA3AF]">No source location</span>
+                              )}
                             </div>
-                            <div className="mt-2 border-l-2 border-line-strong bg-canvas-subtle px-3 py-2">
+                            <div
+                              onClick={locatable ? () => jumpToSource(f.fieldName) : undefined}
+                              className={`mt-2 border-l-2 bg-canvas-subtle px-3 py-2 ${
+                                locatable
+                                  ? "cursor-pointer border-brand-soft transition-colors hover:bg-brand-softer"
+                                  : "border-line-strong"
+                              }`}
+                            >
                               <p className="text-xs italic text-[#4B5563]">
                                 <span className="not-italic font-semibold text-[#9CA3AF]">Evidence: </span>
                                 {f.evidence}
@@ -305,9 +463,10 @@ export default function Review() {
           })}
         </div>
 
-        {/* Needs Review panel */}
+        {/* Right rail: needs review + source document */}
         <div className="xl:col-span-1">
-          <Card className="sticky top-24 overflow-hidden" data-testid="needs-review-panel">
+          <div className="sticky top-8 space-y-6">
+          <Card className="overflow-hidden" data-testid="needs-review-panel">
             <div className="flex items-center gap-2 border-b border-line bg-[#FFFBEB] px-5 py-3">
               <AlertTriangle size={16} className="text-[#B45309]" />
               <h3 className="text-sm font-semibold text-[#B45309]">
@@ -343,6 +502,60 @@ export default function Review() {
               </div>
             </div>
           </Card>
+
+          {/* Source document viewer */}
+          <Card className="overflow-hidden" data-testid="source-document-panel">
+            <div className="flex items-center justify-between gap-2 border-b border-line bg-canvas-subtle px-5 py-3">
+              <div className="flex items-center gap-2">
+                <FileText size={15} className="text-brand" />
+                <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">
+                  Source Document
+                </h3>
+              </div>
+              <MethodTag method={doc.extraction_method} />
+            </div>
+            {doc.raw_text ? (
+              <>
+                <div className="border-b border-line px-5 py-2.5 text-xs text-[#9CA3AF]">
+                  {doc.extraction_method === "ocr"
+                    ? "Text recreated from the scanned PDF via OCR — highlights mark where each field was found."
+                    : "Text extracted from the uploaded PDF — highlights mark where each field was found."}
+                </div>
+                <div
+                  ref={docScrollRef}
+                  data-testid="source-document-text"
+                  className="max-h-[60vh] overflow-y-auto px-5 py-4"
+                >
+                  <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-5 text-ink-soft">
+                    {docSegments.map((seg, i) =>
+                      seg.group === undefined ? (
+                        <React.Fragment key={i}>{seg.text}</React.Fragment>
+                      ) : (
+                        <mark
+                          key={i}
+                          id={`evidence-mark-${seg.group}`}
+                          onClick={() => jumpToField(seg.group)}
+                          title={evidenceIndex.groups[seg.group].fieldNames.join(", ")}
+                          className={`cursor-pointer rounded-sm px-0.5 transition-colors ${
+                            activeGroup === seg.group
+                              ? "bg-brand text-white"
+                              : "bg-brand-soft text-brand-ink hover:bg-[#DDD6FE]"
+                          }`}
+                        >
+                          {seg.text}
+                        </mark>
+                      )
+                    )}
+                  </pre>
+                </div>
+              </>
+            ) : (
+              <div className="px-5 py-8 text-center text-xs text-[#9CA3AF]">
+                No text could be extracted from this document, so there is no source to display.
+              </div>
+            )}
+          </Card>
+          </div>
         </div>
       </div>
     </div>
