@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Info,
   ShieldAlert,
+  ChevronRight,
 } from "lucide-react";
 import { Card, Button, StatusBadge, MethodTag, QualityBadge, Confidence } from "../components/ui";
 import { getDocument, saveDraft, approveDocument, exportUrl } from "../lib/api";
@@ -55,6 +56,16 @@ export default function Review() {
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
   const [flash, setFlash] = useState("");
+  const [expanded, setExpanded] = useState(new Set());
+
+  const toggleField = (name) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
 
   useEffect(() => {
     let active = true;
@@ -231,32 +242,63 @@ export default function Review() {
                   </h3>
                 </div>
                 <div className="divide-y divide-line">
-                  {sectionFields.map((f) => (
-                    <div key={f.fieldName} className="px-6 py-5">
-                      <div className="flex items-center justify-between gap-3">
-                        <label className="text-sm font-semibold text-ink">{f.fieldName}</label>
-                        <StatusBadge status={f.status} testId={`field-status-${f.fieldName.replace(/[^a-zA-Z]+/g, "-")}`} />
+                  {sectionFields.map((f) => {
+                    const fieldId = f.fieldName.replace(/[^a-zA-Z]+/g, "-");
+                    const isOpen = expanded.has(f.fieldName);
+                    return (
+                      <div key={f.fieldName}>
+                        <button
+                          type="button"
+                          onClick={() => toggleField(f.fieldName)}
+                          data-testid={`field-toggle-${fieldId}`}
+                          className="flex w-full items-center justify-between gap-3 px-6 py-4 text-left transition-colors hover:bg-canvas-subtle"
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <ChevronRight
+                              size={15}
+                              className={`shrink-0 text-[#9CA3AF] transition-transform duration-150 ${
+                                isOpen ? "rotate-90" : ""
+                              }`}
+                            />
+                            <span className="shrink-0 text-sm font-semibold text-ink">
+                              {f.fieldName}
+                            </span>
+                            {!isOpen && (
+                              <span className="truncate text-sm text-[#9CA3AF]">
+                                {f.value ? `— ${f.value}` : ""}
+                              </span>
+                            )}
+                          </div>
+                          <StatusBadge
+                            status={f.status}
+                            testId={`field-status-${fieldId}`}
+                          />
+                        </button>
+                        {isOpen && (
+                          <div className="px-6 pb-5">
+                            <textarea
+                              rows={f.value && f.value.length > 60 ? 2 : 1}
+                              value={f.value}
+                              disabled={isApproved}
+                              onChange={(e) => updateField(f.fieldName, e.target.value)}
+                              placeholder="—"
+                              data-testid={`field-input-${fieldId}`}
+                              className="w-full resize-y rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand-soft disabled:bg-canvas-muted disabled:text-[#4B5563]"
+                            />
+                            <div className="mt-2 flex items-center justify-between gap-4">
+                              <Confidence value={f.confidence} testId={`field-confidence-${fieldId}`} />
+                            </div>
+                            <div className="mt-2 border-l-2 border-line-strong bg-canvas-subtle px-3 py-2">
+                              <p className="text-xs italic text-[#4B5563]">
+                                <span className="not-italic font-semibold text-[#9CA3AF]">Evidence: </span>
+                                {f.evidence}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <textarea
-                        rows={f.value && f.value.length > 60 ? 2 : 1}
-                        value={f.value}
-                        disabled={isApproved}
-                        onChange={(e) => updateField(f.fieldName, e.target.value)}
-                        placeholder="—"
-                        data-testid={`field-input-${f.fieldName.replace(/[^a-zA-Z]+/g, "-")}`}
-                        className="mt-2 w-full resize-y rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand-soft disabled:bg-canvas-muted disabled:text-[#4B5563]"
-                      />
-                      <div className="mt-2 flex items-center justify-between gap-4">
-                        <Confidence value={f.confidence} testId={`field-confidence-${f.fieldName.replace(/[^a-zA-Z]+/g, "-")}`} />
-                      </div>
-                      <div className="mt-2 border-l-2 border-line-strong bg-canvas-subtle px-3 py-2">
-                        <p className="text-xs italic text-[#4B5563]">
-                          <span className="not-italic font-semibold text-[#9CA3AF]">Evidence: </span>
-                          {f.evidence}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Card>
             );
