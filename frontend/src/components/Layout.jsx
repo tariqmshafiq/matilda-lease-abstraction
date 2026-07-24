@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, History, Download, Building2 } from "lucide-react";
+import { LayoutDashboard, History, Download } from "lucide-react";
 
 const NAV = [
   { to: "/", label: "Upload & Dashboard", icon: LayoutDashboard, end: true },
@@ -14,9 +14,7 @@ export default function Layout({ children }) {
       {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-white md:flex">
         <div className="flex items-center gap-3 border-b border-line px-6 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-ink text-white">
-            <Building2 size={18} strokeWidth={2} />
-          </div>
+          <img src="/logo.webp" alt="Logo" className="h-9 w-9 rounded-sm object-contain" />
           <div className="leading-tight">
             <div className="font-heading text-sm font-bold tracking-tight text-ink">
               Lease Abstraction
