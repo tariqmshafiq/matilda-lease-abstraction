@@ -8,6 +8,11 @@ import {
   Files,
   Loader2,
   X,
+  ScanText,
+  Sparkles,
+  ShieldCheck,
+  Database,
+  Circle,
 } from "lucide-react";
 import { Card, Button, StatusBadge, MethodTag } from "../components/ui";
 import { getStats, listDocuments, uploadDocument } from "../lib/api";
@@ -25,6 +30,51 @@ function fmtDate(iso) {
   }
 }
 
+const PROCESSING_STAGES = [
+  {
+    key: "upload",
+    label: "Uploading document",
+    detail: "Sending the PDF to the server",
+    icon: UploadCloud,
+  },
+  {
+    key: "extract",
+    label: "Extracting text",
+    detail: "Reading embedded text from the PDF (pdfplumber)",
+    icon: FileText,
+  },
+  {
+    key: "ocr",
+    label: "Checking scan quality",
+    detail: "Falling back to OCR if the PDF is image-based",
+    icon: ScanText,
+  },
+  {
+    key: "ai",
+    label: "Running AI abstraction",
+    detail: "Gemini is extracting the 10 lease fields",
+    icon: Sparkles,
+  },
+  {
+    key: "validate",
+    label: "Validating fields",
+    detail: "Scoring confidence & flagging anything uncertain",
+    icon: ShieldCheck,
+  },
+  {
+    key: "save",
+    label: "Saving record",
+    detail: "Persisting the abstraction and preparing the review",
+    icon: Database,
+  },
+];
+
+// How long (ms) each simulated post-upload stage lingers before advancing.
+// The pipeline runs as a single backend request, so stages after "upload"
+// are timed estimates of real work (extraction -> OCR check -> AI -> save),
+// capped one stage before the end until the actual response arrives.
+const STAGE_INTERVAL_MS = 1400;
+
 const SUMMARY = [
   { key: "total", label: "Total Uploaded", icon: Files, color: "#0A0A0A" },
   { key: "processed", label: "Documents Processed", icon: FileText, color: "#1E40AF" },
@@ -40,7 +90,28 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
+  const [stageIndex, setStageIndex] = useState(0);
   const inputRef = useRef(null);
+  const stageTimerRef = useRef(null);
+
+  const clearStageTimer = useCallback(() => {
+    if (stageTimerRef.current) {
+      clearInterval(stageTimerRef.current);
+      stageTimerRef.current = null;
+    }
+  }, []);
+
+  const startStageTimer = useCallback(() => {
+    clearStageTimer();
+    // Advance through the post-upload stages, but never past the
+    // second-to-last one — the final stage is only shown once the
+    // real backend response comes back.
+    stageTimerRef.current = setInterval(() => {
+      setStageIndex((i) => Math.min(i + 1, PROCESSING_STAGES.length - 2));
+    }, STAGE_INTERVAL_MS);
+  }, [clearStageTimer]);
+
+  useEffect(() => clearStageTimer, [clearStageTimer]);
 
   const refresh = useCallback(async () => {
     try {
@@ -67,12 +138,21 @@ export default function Dashboard() {
       }
       setUploading(true);
       setProgress(0);
+      setStageIndex(0);
       try {
         const formData = new FormData();
         formData.append("file", file);
         const result = await uploadDocument(formData, (e) => {
-          if (e.total) setProgress(Math.round((e.loaded / e.total) * 100));
+          if (!e.total) return;
+          const pct = Math.round((e.loaded / e.total) * 100);
+          setProgress(pct);
+          if (pct >= 100) {
+            setStageIndex(1);
+            startStageTimer();
+          }
         });
+        clearStageTimer();
+        setStageIndex(PROCESSING_STAGES.length - 1);
         await refresh();
         // navigate to review of the new doc
         if (result && result.id) navigate(`/review/${result.id}`);
@@ -80,11 +160,13 @@ export default function Dashboard() {
         const msg = e?.response?.data?.detail || "Upload failed. Please try again.";
         setError(typeof msg === "string" ? msg : "Upload failed.");
       } finally {
+        clearStageTimer();
         setUploading(false);
         setProgress(0);
+        setStageIndex(0);
       }
     },
-    [navigate, refresh]
+    [navigate, refresh, startStageTimer, clearStageTimer]
   );
 
   const recent = docs.slice(0, 5);
@@ -146,8 +228,12 @@ export default function Dashboard() {
             if (!uploading) handleFiles(e.dataTransfer.files);
           }}
           onClick={() => !uploading && inputRef.current?.click()}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed bg-white px-6 py-14 text-center transition-colors duration-150 ${
-            dragOver ? "border-ink bg-canvas-muted" : "border-line-strong hover:border-ink"
+          className={`rounded-md border-2 border-dashed bg-white text-center transition-colors duration-150 ${
+            uploading
+              ? "cursor-default px-6 py-10 border-line-strong"
+              : `flex cursor-pointer flex-col items-center justify-center px-6 py-14 ${
+                  dragOver ? "border-ink bg-canvas-muted" : "border-line-strong hover:border-ink"
+                }`
           }`}
         >
           <input
@@ -159,15 +245,58 @@ export default function Dashboard() {
             onChange={(e) => handleFiles(e.target.files)}
           />
           {uploading ? (
-            <>
-              <Loader2 className="animate-spin text-ink" size={36} />
-              <p className="mt-4 text-sm font-semibold text-ink" data-testid="upload-status">
-                Processing… {progress > 0 ? `${progress}%` : "extracting & analyzing"}
+            <div className="mx-auto max-w-md" data-testid="upload-status">
+              <p className="mb-5 text-center text-sm font-semibold text-ink">
+                Processing document…
               </p>
-              <p className="mt-1 text-xs text-[#9CA3AF]">
-                Extracting text and running AI abstraction. This can take a few seconds.
-              </p>
-            </>
+              <ol className="space-y-3">
+                {PROCESSING_STAGES.map((stage, i) => {
+                  const Icon = stage.icon;
+                  const isDone = i < stageIndex;
+                  const isCurrent = i === stageIndex;
+                  return (
+                    <li key={stage.key} className="flex items-start gap-3">
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center">
+                        {isDone ? (
+                          <CheckCircle2 size={18} className="text-[#166534]" />
+                        ) : isCurrent ? (
+                          <Loader2 size={18} className="animate-spin text-ink" />
+                        ) : (
+                          <Circle size={16} className="text-[#D1D5DB]" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1 text-left">
+                        <div className="flex items-center gap-1.5">
+                          <Icon
+                            size={13}
+                            className={
+                              isDone ? "text-[#166534]" : isCurrent ? "text-ink" : "text-[#D1D5DB]"
+                            }
+                          />
+                          <p
+                            className={`text-sm font-medium ${
+                              isDone
+                                ? "text-[#166534]"
+                                : isCurrent
+                                ? "text-ink"
+                                : "text-[#9CA3AF]"
+                            }`}
+                          >
+                            {stage.label}
+                            {isCurrent && stage.key === "upload" && progress > 0
+                              ? ` (${progress}%)`
+                              : ""}
+                          </p>
+                        </div>
+                        {isCurrent && (
+                          <p className="mt-0.5 text-xs text-[#9CA3AF]">{stage.detail}</p>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           ) : (
             <>
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-canvas-muted">
