@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { LayoutDashboard, History, Download, Building2 } from "lucide-react";
 
 const NAV = [
@@ -9,7 +9,6 @@ const NAV = [
 ];
 
 export default function Layout({ children }) {
-  const location = useLocation();
   return (
     <div className="min-h-screen bg-canvas-subtle">
       {/* Sidebar */}
@@ -55,14 +54,6 @@ export default function Layout({ children }) {
 
       {/* Main */}
       <div className="md:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-white/90 px-6 py-4 backdrop-blur md:px-12">
-          <h1 className="font-heading text-lg font-bold tracking-tight text-ink">
-            Lease Abstraction Assistant
-          </h1>
-          <div className="hidden text-xs text-[#9CA3AF] sm:block">
-            {location.pathname.startsWith("/review") ? "Document Review" : "Internal Tool"}
-          </div>
-        </header>
         <main className="p-6 md:p-12">{children}</main>
       </div>
     </div>
