@@ -28,7 +28,7 @@ function fmtDate(iso) {
 const SUMMARY = [
   { key: "total", label: "Total Uploaded", icon: Files, color: "#0A0A0A" },
   { key: "processed", label: "Documents Processed", icon: FileText, color: "#1E40AF" },
-  { key: "needs_review", label: "Needing Review", icon: AlertTriangle, color: "#92400E" },
+  { key: "needs_review", label: "Needs Review", icon: AlertTriangle, color: "#92400E" },
   { key: "approved", label: "Approved", icon: CheckCircle2, color: "#166534" },
 ];
 

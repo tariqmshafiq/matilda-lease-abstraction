@@ -15,11 +15,8 @@ export default function Layout({ children }) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-white md:flex">
         <div className="flex items-center gap-3 border-b border-line px-6 py-5">
           <img src="/logo.webp" alt="Logo" className="h-9 w-9 rounded-sm object-contain" />
-          <div className="leading-tight">
-            <div className="font-heading text-sm font-bold tracking-tight text-ink">
-              Lease Abstraction
-            </div>
-            <div className="text-xs text-[#9CA3AF]">Assistant</div>
+          <div className="font-heading text-sm font-bold tracking-tight text-ink">
+            Lease Abstraction
           </div>
         </div>
         <nav className="flex-1 px-3 py-4">
