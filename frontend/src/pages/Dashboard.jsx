@@ -294,7 +294,7 @@ export default function Dashboard() {
                 <UploadCloud className="text-brand" size={26} />
               </div>
               <p className="mt-4 text-sm font-semibold text-ink">
-                Drag &amp; drop a lease PDF here
+                Drag &amp; Drop PDF
               </p>
               <p className="mt-1 text-xs text-[#9CA3AF]">or click to browse · PDF only</p>
             </>
