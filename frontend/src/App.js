@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Review from "./pages/Review";
 import ExportData from "./pages/ExportData";
+import GetStarted from "./pages/GetStarted";
 import "./App.css";
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/history" element={<History />} />
           <Route path="/review/:id" element={<Review />} />
           <Route path="/export" element={<ExportData />} />
+          <Route path="/get-started" element={<GetStarted />} />
         </Routes>
       </Layout>
     </BrowserRouter>
