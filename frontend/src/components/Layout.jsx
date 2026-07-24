@@ -18,7 +18,7 @@ export default function Layout({ children }) {
         <div className="flex items-center gap-3 border-b border-line px-6 py-5">
           <img src="/logo.webp" alt="Logo" className="h-9 w-9 rounded-sm object-contain" />
           <div className="font-heading text-sm font-bold tracking-tight text-ink">
-            Lease Abstraction
+            MatildaCLA
           </div>
         </div>
         <nav className="flex-1 px-3 py-4">
