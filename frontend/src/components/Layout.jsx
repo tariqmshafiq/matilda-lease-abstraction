@@ -3,11 +3,11 @@ import { NavLink } from "react-router-dom";
 import { LayoutDashboard, History, Download, Compass, Settings2 } from "lucide-react";
 
 const NAV = [
-  { to: "/", label: "Upload & Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/history", label: "Document History", icon: History },
-  { to: "/export", label: "Export Data", icon: Download },
-  { to: "/get-started", label: "Get Started", icon: Compass },
-  { to: "/settings", label: "AI Settings", icon: Settings2 },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/history", label: "History", icon: History },
+  { to: "/export", label: "Export", icon: Download },
+  { to: "/get-started", label: "Start Here", icon: Compass },
+  { to: "/settings", label: "Settings", icon: Settings2 },
 ];
 
 export default function Layout({ children }) {

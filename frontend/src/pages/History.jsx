@@ -33,15 +33,9 @@ export default function History() {
   return (
     <div className="app-fade-in space-y-8">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#9CA3AF]">
-          Records
-        </p>
-        <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
-          Document History
+        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
+          History
         </h2>
-        <p className="mt-2 text-sm text-[#4B5563]">
-          All uploaded lease documents and their processing status.
-        </p>
       </div>
 
       <Card className="overflow-hidden">

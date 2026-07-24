@@ -115,7 +115,7 @@ export default function GetStarted() {
           Reference
         </p>
         <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
-          Get Started
+          Start Here
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-[#4B5563]">
           The mechanism this tool uses to turn an uploaded lease PDF into a

@@ -42,7 +42,7 @@ export default function ExportData() {
           Export
         </p>
         <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
-          Export Data
+          Export
         </h2>
         <p className="mt-2 text-sm text-[#4B5563]">
           Download approved lease abstraction records as a CSV or Excel file (one row per approved

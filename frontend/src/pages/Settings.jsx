@@ -66,7 +66,7 @@ export default function Settings() {
           Configuration
         </p>
         <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
-          AI Settings
+          Settings
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-[#4B5563]">
           Choose which AI model runs lease abstraction and manage its API key. Changes

@@ -174,16 +174,9 @@ export default function Dashboard() {
   return (
     <div className="app-fade-in space-y-10">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#9CA3AF]">
-          Overview
-        </p>
-        <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-ink">
-          Upload &amp; Dashboard
+        <h2 className="font-heading text-3xl font-bold tracking-tight text-[#9CA3AF]">
+          Dashboard
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-[#4B5563]">
-          Upload a commercial lease PDF to extract the 10 core abstraction fields with
-          AI, then review and approve the record.
-        </p>
       </div>
 
       {/* Summary cards */}
